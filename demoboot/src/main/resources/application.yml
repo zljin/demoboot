@@ -1,0 +1,42 @@
+server:
+  port: 20210
+
+
+spring:
+  # 数据源的相关配置
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource # Spring自带的连接池,不用白不用
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/leonard?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true
+    username: root
+    password: root
+  # redis配置
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+  # kafka配置
+  kafka:
+    # 通过client-id调用kafka服务器的那个应用
+    client-id: demokafka
+    bootstrap-servers: 192.168.2.6:9092
+    consumer:
+      group-id: demo-1
+      auto-offset-reset: latest
+      enable-auto-commit: true
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      retries: 0
+      batch-size:
+      buffer-memory:
+      acks:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+# mybatis 配置
+mybatis:
+  type-aliases-package: cn.zoulj.pojo          # 所有POJO类所在包路径
+  mapper-locations: classpath:mapper/*.xml      # mapper映射文件
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
