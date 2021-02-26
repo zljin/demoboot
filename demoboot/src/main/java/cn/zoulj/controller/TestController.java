@@ -3,7 +3,6 @@ package cn.zoulj.controller;
 import cn.zoulj.pojo.Employee;
 import cn.zoulj.service.EmployeeService;
 import cn.zoulj.utils.RedisOperator;
-import com.alibaba.fastjson.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,10 +56,10 @@ public class TestController {
     }
 
     @GetMapping("/kafkasend")
-    //这里进行消息队列信息的发送，
+    //这里进行消息队列信息的发送
     public String test3(){
         byte[] arr = new byte[10];
-        kafkaTemplate.send("log", JSONArray.toJSONString(arr));
+        kafkaTemplate.send("test", "kafka消息队列发送消息");
         return "ok";
     }
 }

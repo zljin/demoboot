@@ -17,20 +17,54 @@ spring:
     port: 6379
   # kafka配置
   kafka:
-    # 通过client-id调用kafka服务器的那个应用
-    client-id: demokafka
+    # 在发出请求时传递给服务器的 id 字符串（用户自定义）
+    # 这个不起眼的参数可以让我们知道，kafka 的每次调用来自哪个应用
+    client-id: kafka-demo
+    # 连接 kafka 服务器，集群多个用逗号隔开
     bootstrap-servers: 192.168.2.6:9092
-    consumer:
-      group-id: demo-1
-      auto-offset-reset: latest
-      enable-auto-commit: true
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    # 生产者配置
     producer:
+      # 写入失败时，重试次数。当leader节点失效，一个repli节点会替代成为leader节点，此时可能出现写入失败，
+      # 当 retris 为 0 时，produce 不会重复。retirs 重发，此时 replica 节点完全成为 leader 节点，不会产生消息丢失。
+      # 默认 0
       retries: 0
-      batch-size:
-      buffer-memory:
-      acks:
+      # 每次批量发送消息的数量，produce积累到一定数据，一次发送
+      # 加大批处理，能提高性能，提高吞吐量，但是会增大内存的消耗，减小相反
+      # 默认 16384
+      batch-size: 16384
+      # 用来缓冲等待被发送到服务器的记录的总字节数
+      # 缓存大小达到buffer.memory就发送数据
+      # 默认 33554432
+      buffer-memory: 33554432
+      # 此配置是 Producer 在确认一个请求发送完成之前需要收到的反馈信息的数量。 这个参数是为了保证发送请求的可靠性。
+      # 0：如果设置为0，则 producer 不会等待服务器的反馈。添加到缓存后就当发送了，后续服务器是否请求无法保证，重试也不会生效
+      # 1：leader 节点会将记录写入本地日志，并且在所有 follower 节点反馈之前就先确认成功。 follower 节点复制数据完成之前产生错误，则这条记录会丢失。
+      # all：意味着 leader 节点会等待所有同步中的副本确认之后再确认这条记录是否发送完成。只要至少有一个同步副本存在，记录就不会丢失。这种方式是对请求传递的最有效保证。acks=-1与acks=all是等效的。
+      # 默认 1
+      acks: all
+      # 指定消息key和消息体的编解码方式
+      # 默认都是 org.apache.kafka.common.serialization.StringSerializer
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    # 消费者配置
+    consumer:
+      # 组 ID，在kafka中，同一组中的consumer不会读取到同一个消息
+      # 举个例子，容器部署高可用，即 1 个应用部署多个容器实例
+      # 这时，这几个应用的组 ID 都是一样的，同一条数据就不会被消费多次
+      group-id: kafka-demo-1
+      # 消费者消费数据的偏移量
+      # earliest：当各分区下有已提交的offset时，从提交的 offset 开始消费；无提交的offset时，从头开始消费
+      # latest：当各分区下有已提交的offset时，从提交的 offset 开始消费；无提交的offset时，消费新产生的该分区下的数据
+      # none：当各分区都存在已提交的offset时，从 offset 后开始消费；只要有一个分区不存在已提交的offset，则抛出异常
+      #
+      # 这个看业务场景吧，偏移量没有，差不多意思就是数据丢了，不知道读到哪了，像是发送短信通知这种的，latest 就行
+      # 但是像处理一些重要的业务数据，比如财务之类的，如果丢了只能重头算，主要看数据的价值把，这时候就要用 earliest
+      # 默认 latest
+      auto-offset-reset: latest
+      # 自动提交 offset
+      enable-auto-commit: true
+      # 指定消息key和消息体的编解码方式
+      # 默认都是 org.apache.kafka.common.serialization.StringDeserializer
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 

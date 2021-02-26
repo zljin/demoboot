@@ -4,12 +4,14 @@ import com.alibaba.fastjson.JSONArray;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
+
 @Component
 public class kafkaListener {
 
-    @KafkaListener(topics = "log")
+    @KafkaListener(topics = "test")
     public void getMessage(String message) {
-        byte[] arr = JSONArray.parseObject(message, byte[].class);
-        System.out.println(arr);
+        String msg = message;
+        System.out.println(new Date() + ": " + msg);
     }
 }
