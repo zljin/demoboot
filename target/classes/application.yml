@@ -1,0 +1,54 @@
+server:
+  port: 20210
+
+spring:
+  # 数据源的相关配置
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/leonard?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true
+    username: root
+    password: root
+  # redis配置
+  redis:
+    database: 0
+    host: 127.0.0.1
+    port: 6379
+  # kafka配置
+  kafka:
+    bootstrap-servers: 192.168.2.6:9092
+    consumer:
+      # 消息签收机制：手工签收
+      enable-auto-commit: false
+      # 该属性指定了消费者在读取一个没有偏移量的分区或者偏移量无效的情况下该作何处理：
+      # latest（默认值）在偏移量无效的情况下，消费者将从最新的记录开始读取数据（在消费者启动之后生成的记录）
+      # earliest ：在偏移量无效的情况下，消费者将从起始位置读取分区的记录
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    listener:
+      ack-mode: manual
+      concurrency: 5
+
+    producer:
+      ## kafka producer 发送消息失败时的一个重试的次数
+      retries: 0
+      ## 批量发送数据的配置
+      batch-size: 16384
+      ## 设置kafka 生产者内存缓存区的大小（32M）
+      buffer-memory: 33554432
+      key-serializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-serializer: org.apache.kafka.common.serialization.StringDeserializer
+      # acks=0 ： 生产者在成功写入消息之前不会等待任何来自服务器的响应。
+      # acks=1 ： 只要集群的首领节点收到消息，生产者就会收到一个来自服务器成功响应。
+      # acks=-1: 表示分区leader必须等待消息被成功写入到所有的ISR副本(同步副本)中才认
+      # 为producer请求成功。这种方案提供最高的消息持久性保证，但是理论上吞吐率也是最差的。
+      ## 	这个是kafka生产端最重要的选项
+      acks: 1
+
+# mybatis 配置
+mybatis:
+  type-aliases-package: cn.zoulj.pojo          # 所有POJO类所在包路径
+  mapper-locations: classpath:mapper/*.xml      # mapper映射文件
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
